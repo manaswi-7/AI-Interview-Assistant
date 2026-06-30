@@ -1,30 +1,41 @@
 from google import genai
-from config import API_KEY
+import streamlit as st
 
-client = genai.Client(
-    api_key=API_KEY
-)
+# Get API key securely from Streamlit secrets
+API_KEY = st.secrets["API_KEY"]
+
+# Initialize Gemini client
+client = genai.Client(api_key=API_KEY)
+
 
 def evaluate_answer(question, answer):
-
-    prompt = f"""
-    Question:
-    {question}
-
-    Answer:
-    {answer}
-
-    Evaluate the answer.
-
-    Give:
-    - Score /10
-    - Strengths
-    - Weaknesses
-    - Suggestions
+    """
+    Evaluate a candidate's interview answer using Gemini AI.
     """
 
-    try:
+    if not question or not answer:
+        return "Question or Answer missing."
 
+    prompt = f"""
+You are an expert technical interviewer.
+
+Question:
+{question}
+
+Candidate Answer:
+{answer}
+
+Evaluate the answer and provide:
+
+- Score out of 10
+- Strengths
+- Weaknesses
+- Suggestions for improvement
+
+Give a clear, structured response.
+"""
+
+    try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
@@ -33,5 +44,4 @@ def evaluate_answer(question, answer):
         return response.text
 
     except Exception as e:
-
         return f"API Error: {str(e)}"
